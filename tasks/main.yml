@@ -1,0 +1,33 @@
+---
+
+- name: Stopping Cohesity Service
+  win_service:
+    name: CohesityAgent
+    state: stopped
+
+- name: Setting Cohesity Agent to LocalSystem
+  win_service:
+    name: CohesityAgent
+    state: started
+    username: LocalSystem
+    password: ''
+    desktop_interact: yes
+
+- name: Grant Logon Permission for AD Account
+  win_user_right:
+    name: SeServiceLogonRight
+    users:
+    - '{{ env }}\{{ user }}'
+    action: add
+
+- name: Granting login for AD account to Cohesity Service
+  win_service:
+    name: CohesityAgent
+    username: '{{ env }}\{{ user }}'
+    password: "{{ password }}"
+    update_password: always
+
+- name: Restarting Cohesity Service
+  win_service:
+    name: CohesityAgent
+    state: restarted
